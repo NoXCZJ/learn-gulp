@@ -8,8 +8,11 @@ var gulp = require('gulp'),//基础库
 	pngquant = require('imagemin-pngquant'),//PNG压缩
 	sass = require('gulp-ruby-sass'),//sass
 	minifycss = require('gulp-minify-css'),//css压缩
+	jshint = require('gulp-jshint'),//js检查
+	uglify = require('gulp-uglify'),//js压缩
 	clean = require('gulp-clean'),//清空文件夹
 	rename = require('gulp-rename'),//重命名
+	concat = require('gulp-clean'),//合并文件
 	tinylr = require('tiny-lr'),//livereload
 	server = tinylr(),
 	port = 35729,
@@ -59,11 +62,28 @@ gulp.task('images', function() {
 
 });
 
+//js处理
+gulp.task('js', function() {
+	var jsSrc = './js/*.js',
+		jsDst = './dist/js';
+
+	gulp.src(jsSrc)
+		.pipe(jshint('.jshintrc'))
+		.pipe(jshint.reporter('default'))
+		.pipe(concat('main.js'))
+		.pipe(gulp.dest('./js'))
+		.pipe(rename({ suffix: '.min' }))
+		.pipe(uglify())
+		.pipe(livereload(server))
+		.pipe(gulp.dest(jsDst));
+
+});
+
 gulp.task('clean', function() {
     gulp.src(['./dist/css', './dist/js', './dist/images'], {read: false})
     	.pipe(clean());
 });
 
 gulp.task('default', ['clean'], function() {
-	gulp.start('css', 'images');
+	gulp.start('css', 'js');
 });
